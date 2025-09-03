@@ -35,7 +35,7 @@ func (s *service) Seed(ctx context.Context, userID string, n int) ([]*entity.Ord
 
 	for i := 0; i < n; i++ {
 		st := statuses[i%len(statuses)]
-		createdAt := now.Add(minutes(-(15 - i))) // spread in the past
+		createdAt := now.Add(minutes(-(15 - i)))
 		updatedAt := createdAt
 		statusChangedAt := createdAt
 		estimated := createdAt.Add(minutes(30 + i))
@@ -108,7 +108,7 @@ func (s *service) Seed(ctx context.Context, userID string, n int) ([]*entity.Ord
 }
 
 // Helpers without importing fmt to minimize deps
-func itoa(v int, salt int) string { return fmtInt(v + salt) }
+func itoa(v int, salt int) string         { return fmtInt(v + salt) }
 func sprintf(format string, v int) string { return fmtPadded(v) }
 
 func pick[T any](arr []T, i int) T { return arr[i%len(arr)] }
@@ -118,16 +118,23 @@ func minutes(m int) time.Duration { return time.Duration(m) * time.Minute }
 
 // tiny integer formatting helpers
 func fmtInt(v int) string {
-	if v == 0 { return "0" }
+	if v == 0 {
+		return "0"
+	}
 	neg := false
-	if v < 0 { neg = true; v = -v }
+	if v < 0 {
+		neg = true
+		v = -v
+	}
 	buf := make([]byte, 0, 12)
 	for v > 0 {
 		d := byte('0' + (v % 10))
 		buf = append([]byte{d}, buf...)
 		v /= 10
 	}
-	if neg { buf = append([]byte{'-'}, buf...) }
+	if neg {
+		buf = append([]byte{'-'}, buf...)
+	}
 	return string(buf)
 }
 

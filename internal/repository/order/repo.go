@@ -14,7 +14,6 @@ type InMemory struct {
 	store map[string]*entity.Order
 }
 
-// ListFrom returns orders for a given user created at or after 'from'.
 func (r *InMemory) ListFrom(ctx context.Context, from time.Time) ([]*entity.Order, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()

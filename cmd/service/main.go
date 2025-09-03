@@ -18,12 +18,9 @@ import (
 	ucase "github.com/nikolaev/service-order/internal/usecase/order"
 )
 
-// Switch to in-memory repository, database not used anymore.
-// We provide both the concrete repo for workers and the interface for usecases.
-func provideInMemory() *repo.InMemory { return repo.NewInMemory() }
+func provideInMemory() *repo.InMemory                 { return repo.NewInMemory() }
 func provideRepo(mem *repo.InMemory) ucase.Repository { return mem }
 
-// Provide Kafka producer: if KAFKA_BROKERS is set, use Sarama; otherwise Noop.
 func provideProducer() ucase.Producer {
 	if os.Getenv("KAFKA_BROKERS") != "" {
 		p, err := kafka.NewSaramaProducer()
@@ -47,7 +44,6 @@ func provideSeeder(mem *repo.InMemory) seed.Service {
 	return seed.New(mem, sysClock{})
 }
 
-// provideOrderHandler ensures the debug seeder is injected into the handler.
 func provideOrderHandler(svc ucase.Service, dbg seed.Service) *handlers.OrderHandler {
 	return handlers.NewOrderHandler(svc, dbg)
 }
@@ -58,7 +54,6 @@ func provideRouter() *chi.Mux {
 	return r
 }
 
-// runStatusWorker periodically advances orders through statuses according to timings.
 func runStatusWorker(ctx context.Context, mem *repo.InMemory, prod ucase.Producer) {
 	ticker := time.NewTicker(500 * time.Millisecond)
 	defer ticker.Stop()
@@ -78,7 +73,6 @@ func runStatusWorker(ctx context.Context, mem *repo.InMemory, prod ucase.Produce
 func main() {
 	c := dig.New()
 
-	// Register providers
 	_ = c.Provide(provideInMemory)
 	_ = c.Provide(provideRepo)
 	_ = c.Provide(provideProducer)
@@ -87,9 +81,7 @@ func main() {
 	_ = c.Provide(provideOrderHandler)
 	_ = c.Provide(provideRouter)
 
-	// Build and run HTTP server
- err := c.Invoke(func(r *chi.Mux, h *handlers.OrderHandler, mem *repo.InMemory, prod ucase.Producer) error {
-		// background goroutine for status progression
+	err := c.Invoke(func(r *chi.Mux, h *handlers.OrderHandler, mem *repo.InMemory, prod ucase.Producer) error {
 		ctx, cancel := context.WithCancel(context.Background())
 		go func() { defer cancel(); runStatusWorker(ctx, mem, prod) }()
 		r.Mount("/public/api/v1", h.Routes())

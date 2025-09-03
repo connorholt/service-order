@@ -13,8 +13,6 @@ func (s *service) Delete(ctx context.Context, userID string, id string) error {
 	if id == "" {
 		return entity.ErrInvalidID
 	}
-	// Ownership is checked inside repository when marking deleted for safety,
-	// but we keep consistent flow: fetch, check, then mark
 	o, err := s.repo.GetByID(ctx, id)
 	if err != nil {
 		return err

@@ -18,7 +18,6 @@ func (s *service) Get(ctx context.Context, userID string, id string) (*entity.Or
 	if o == nil || o.IsDeleted {
 		return nil, entity.ErrNotFound
 	}
-	// Enforce ownership only when userID is provided; allow public GET when header is absent.
 	if userID != "" && o.UserID != userID {
 		return nil, entity.ErrForeignOwnership
 	}

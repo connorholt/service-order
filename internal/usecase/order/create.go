@@ -16,24 +16,24 @@ func (s *service) Create(ctx context.Context, userID string, in CreateInput) (*e
 		return nil, entity.ErrInvalidInput
 	}
 	now := s.clock.Now()
-		o := &entity.Order{
-			ID:              uuid.NewString(),
-			UserID:          userID,
-			OrderNumber:     in.OrderNumber,
-			FIO:             in.FIO,
-			RestaurantID:    in.RestaurantID,
-			Items:           in.Items,
-			TotalPrice:      in.TotalPrice,
-			Address:         in.Address,
-			Status:          entity.OrderStatusCreated,
-			CreatedAt:       now,
-			UpdatedAt:       now,
-			StatusChangedAt: now,
-		}
-		advanceStatus(now, o)
+	o := &entity.Order{
+		ID:              uuid.NewString(),
+		UserID:          userID,
+		OrderNumber:     in.OrderNumber,
+		FIO:             in.FIO,
+		RestaurantID:    in.RestaurantID,
+		Items:           in.Items,
+		TotalPrice:      in.TotalPrice,
+		Address:         in.Address,
+		Status:          entity.OrderStatusCreated,
+		CreatedAt:       now,
+		UpdatedAt:       now,
+		StatusChangedAt: now,
+	}
+	advanceStatus(now, o)
 	if err := s.repo.Create(ctx, o); err != nil {
 		return nil, err
 	}
-	_ = s.producer.OrderCreated(ctx, o) // ошибки продьюсера не рушат бизнес‑лог.
+	_ = s.producer.OrderCreated(ctx, o)
 	return o, nil
 }
