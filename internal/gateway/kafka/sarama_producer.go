@@ -13,10 +13,9 @@ import (
 )
 
 // SaramaProducer implements producing order events to Kafka using sarama.
-// Only OrderCreated is required by the task in a defined format.
 // Env:
-//  - KAFKA_BROKERS: comma-separated list of brokers (default: localhost:9092)
-//  - KAFKA_ORDER_TOPIC: topic for order status changes (default: order.status.changed)
+//   - KAFKA_BROKERS: comma-separated list of brokers (default: localhost:9092)
+//   - KAFKA_ORDER_TOPIC: topic for order status changes (default: order.status.changed)
 type SaramaProducer struct {
 	p     sarama.SyncProducer
 	topic string
