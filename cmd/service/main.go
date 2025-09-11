@@ -18,27 +18,38 @@ import (
 	ucase "github.com/nikolaev/service-order/internal/usecase/order"
 )
 
-func provideInMemory() *repo.InMemory                 { return repo.NewInMemory() }
-func provideRepo(mem *repo.InMemory) ucase.Repository { return mem }
-
-func provideProducer() ucase.Producer {
-	if os.Getenv("KAFKA_BROKERS") != "" {
-		p, err := kafka.NewSaramaProducer()
-		if err == nil {
-			return p
-		}
-		log.Printf("failed to init sarama producer, fallback to noop: %v", err)
-	}
-	return kafka.NoopProducer{}
-}
-
-func provideService(r ucase.Repository, p ucase.Producer) ucase.Service {
-	return ucase.New(r, p)
-}
-
 type sysClock struct{}
 
 func (sysClock) Now() time.Time { return time.Now().UTC() }
+
+func main() {
+	c := dig.New()
+
+	_ = c.Provide(provideInMemory)
+	_ = c.Provide(provideRepo)
+	_ = c.Provide(provideProducer)
+	_ = c.Provide(provideService)
+	_ = c.Provide(provideSeeder)
+	_ = c.Provide(provideOrderHandler)
+	_ = c.Provide(provideRouter)
+
+	err := c.Invoke(func(r *chi.Mux, h *handlers.OrderHandler, mem *repo.InMemory, prod ucase.Producer) error {
+		ctx, cancel := context.WithCancel(context.Background())
+		go func() {
+			defer cancel()
+			runStatusWorker(ctx, mem, prod)
+		}()
+
+		r.Mount("/public/api/v1", h.Routes())
+
+		log.Println("service started on :8080")
+
+		return http.ListenAndServe(":8080", r)
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+}
 
 func provideSeeder(mem *repo.InMemory) seed.Service {
 	return seed.New(mem, sysClock{})
@@ -70,25 +81,21 @@ func runStatusWorker(ctx context.Context, mem *repo.InMemory, prod ucase.Produce
 	}
 }
 
-func main() {
-	c := dig.New()
+func provideInMemory() *repo.InMemory { return repo.NewInMemory() }
 
-	_ = c.Provide(provideInMemory)
-	_ = c.Provide(provideRepo)
-	_ = c.Provide(provideProducer)
-	_ = c.Provide(provideService)
-	_ = c.Provide(provideSeeder)
-	_ = c.Provide(provideOrderHandler)
-	_ = c.Provide(provideRouter)
+func provideRepo(mem *repo.InMemory) ucase.Repository { return mem }
 
-	err := c.Invoke(func(r *chi.Mux, h *handlers.OrderHandler, mem *repo.InMemory, prod ucase.Producer) error {
-		ctx, cancel := context.WithCancel(context.Background())
-		go func() { defer cancel(); runStatusWorker(ctx, mem, prod) }()
-		r.Mount("/public/api/v1", h.Routes())
-		log.Println("service started on :8080")
-		return http.ListenAndServe(":8080", r)
-	})
-	if err != nil {
-		log.Fatal(err)
+func provideProducer() ucase.Producer {
+	if os.Getenv("KAFKA_BROKERS") != "" {
+		p, err := kafka.NewSaramaProducer()
+		if err == nil {
+			return p
+		}
+		log.Printf("failed to init sarama producer, fallback to noop: %v", err)
 	}
+	return kafka.NoopProducer{}
+}
+
+func provideService(r ucase.Repository, p ucase.Producer) ucase.Service {
+	return ucase.New(r, p)
 }

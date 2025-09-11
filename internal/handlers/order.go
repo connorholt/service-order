@@ -51,6 +51,7 @@ func (h *OrderHandler) userIDFrom(r *http.Request) string {
 	if r.Header.Get(HeaderBypass) == "true" {
 		return "default-user"
 	}
+
 	return r.Header.Get(HeaderUserID)
 }
 
@@ -149,11 +150,13 @@ func (h *OrderHandler) update(w http.ResponseWriter, r *http.Request) {
 		h.writeError(w, entity.ErrInvalidInput)
 		return
 	}
+
 	order, err := h.uc.Update(r.Context(), userID, id, convert.ToDomainUpdate(req))
 	if err != nil {
 		h.writeError(w, err)
 		return
 	}
+
 	resp := convert.ToTransport(order)
 	h.writeJSON(w, http.StatusOK, resp)
 }
@@ -165,7 +168,11 @@ func (h *OrderHandler) delete(w http.ResponseWriter, r *http.Request) {
 		h.writeError(w, err)
 		return
 	}
-	h.writeJSON(w, http.StatusOK, transport.DeleteOrderResponse{ID: id, Status: string(entity.OrderStatusDeleted)})
+
+	h.writeJSON(w, http.StatusOK, transport.DeleteOrderResponse{
+		ID:     id,
+		Status: string(entity.OrderStatusDeleted),
+	})
 }
 
 // seedDebug creates N=10 demo orders for the current user using current time.
@@ -175,11 +182,13 @@ func (h *OrderHandler) seedDebug(w http.ResponseWriter, r *http.Request) {
 		h.writeError(w, errors.New("debug seeder is not configured"))
 		return
 	}
+
 	orders, err := h.dbg.Seed(r.Context(), userID, 10)
 	if err != nil {
 		h.writeError(w, err)
 		return
 	}
+
 	resp := make([]transport.OrderResponse, 0, len(orders))
 	for _, o := range orders {
 		resp = append(resp, convert.ToTransport(o))

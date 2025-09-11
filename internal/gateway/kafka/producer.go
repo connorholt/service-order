@@ -15,15 +15,17 @@ type Producer interface {
 
 type NoopProducer struct{}
 
-func (NoopProducer) OrderCreated(ctx context.Context, o *entity.Order) error {
+func (NoopProducer) OrderCreated(_ context.Context, o *entity.Order) error {
 	log.Printf("kafka noop: order created %s", o.ID)
 	return nil
 }
-func (NoopProducer) OrderUpdated(ctx context.Context, o *entity.Order) error {
+
+func (NoopProducer) OrderUpdated(_ context.Context, o *entity.Order) error {
 	log.Printf("kafka noop: order updated %s", o.ID)
 	return nil
 }
-func (NoopProducer) OrderDeleted(ctx context.Context, id string, userID string) error {
+
+func (NoopProducer) OrderDeleted(_ context.Context, id string, userID string) error {
 	log.Printf("kafka noop: order deleted %s", id)
 	return nil
 }

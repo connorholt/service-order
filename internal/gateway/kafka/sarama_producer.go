@@ -32,42 +32,76 @@ func NewSaramaProducer() (*SaramaProducer, error) {
 	if brokers == "" {
 		brokers = "localhost:9092"
 	}
+
 	topic := os.Getenv("KAFKA_ORDER_TOPIC")
 	if topic == "" {
 		topic = "order.status.changed"
 	}
+
 	cfg := sarama.NewConfig()
 	cfg.Producer.Return.Successes = true
 	cfg.Producer.RequiredAcks = sarama.WaitForAll
 	cfg.Producer.Retry.Max = 5
+
 	prod, err := sarama.NewSyncProducer(strings.Split(brokers, ","), cfg)
 	if err != nil {
 		return nil, err
 	}
+
 	return &SaramaProducer{p: prod, topic: topic}, nil
 }
 
-func (s *SaramaProducer) Close() error { return s.p.Close() }
+func (s *SaramaProducer) Close() error {
+	return s.p.Close()
+}
 
-func (s *SaramaProducer) OrderCreated(ctx context.Context, o *entity.Order) error {
-	payload := createdEvent{OrderID: o.ID, Status: string(entity.OrderStatusCreated), CreatedAt: time.Now().UTC().Format(time.RFC3339)}
+func (s *SaramaProducer) OrderCreated(_ context.Context, o *entity.Order) error {
+	payload := createdEvent{
+		OrderID:   o.ID,
+		Status:    string(entity.OrderStatusCreated),
+		CreatedAt: time.Now().UTC().Format(time.RFC3339),
+	}
+
 	b, _ := json.Marshal(payload)
-	msg := &sarama.ProducerMessage{Topic: s.topic, Value: sarama.ByteEncoder(b)}
+	msg := &sarama.ProducerMessage{
+		Topic: s.topic,
+		Value: sarama.ByteEncoder(b),
+	}
+
 	_, _, err := s.p.SendMessage(msg)
 	return err
 }
 
-func (s *SaramaProducer) OrderUpdated(ctx context.Context, o *entity.Order) error {
-	payload := createdEvent{OrderID: o.ID, Status: string(o.Status), CreatedAt: time.Now().UTC().Format(time.RFC3339)}
+func (s *SaramaProducer) OrderUpdated(_ context.Context, o *entity.Order) error {
+	payload := createdEvent{
+		OrderID:   o.ID,
+		Status:    string(o.Status),
+		CreatedAt: time.Now().UTC().Format(time.RFC3339),
+	}
+
 	b, _ := json.Marshal(payload)
-	msg := &sarama.ProducerMessage{Topic: s.topic, Value: sarama.ByteEncoder(b)}
+	msg := &sarama.ProducerMessage{
+		Topic: s.topic,
+		Value: sarama.ByteEncoder(b),
+	}
+
 	_, _, err := s.p.SendMessage(msg)
 	return err
 }
-func (s *SaramaProducer) OrderDeleted(ctx context.Context, id string, userID string) error {
-	payload := createdEvent{OrderID: id, Status: string(entity.OrderStatusDeleted), CreatedAt: time.Now().UTC().Format(time.RFC3339)}
+
+func (s *SaramaProducer) OrderDeleted(_ context.Context, id string, userID string) error {
+	payload := createdEvent{
+		OrderID:   id,
+		Status:    string(entity.OrderStatusDeleted),
+		CreatedAt: time.Now().UTC().Format(time.RFC3339),
+	}
+
 	b, _ := json.Marshal(payload)
-	msg := &sarama.ProducerMessage{Topic: s.topic, Value: sarama.ByteEncoder(b)}
+	msg := &sarama.ProducerMessage{
+		Topic: s.topic,
+		Value: sarama.ByteEncoder(b),
+	}
+
 	_, _, err := s.p.SendMessage(msg)
 	return err
 }

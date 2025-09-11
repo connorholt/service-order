@@ -3,8 +3,8 @@ package convert
 import (
 	"time"
 
-	"github.com/nikolaev/service-order/internal/handlers/types/transport"
 	"github.com/nikolaev/service-order/internal/domain/entity"
+	"github.com/nikolaev/service-order/internal/handlers/types/transport"
 	uc "github.com/nikolaev/service-order/internal/usecase/order"
 )
 
@@ -30,6 +30,7 @@ func ToDomainUpdate(in transport.UpdateOrderRequest) uc.UpdateInput {
 		v := toDomainAddress(*in.Address)
 		addr = &v
 	}
+
 	return uc.UpdateInput{
 		OrderNumber: in.OrderNumber,
 		FIO:         in.FIO,
@@ -59,23 +60,47 @@ func ToTransport(o *entity.Order) transport.OrderResponse {
 func toDomainItems(items []transport.Item) []entity.Item {
 	out := make([]entity.Item, 0, len(items))
 	for _, it := range items {
-		out = append(out, entity.Item{FoodID: it.FoodID, Name: it.Name, Quantity: it.Quantity, Price: it.Price})
+		out = append(out, entity.Item{
+			FoodID:   it.FoodID,
+			Name:     it.Name,
+			Quantity: it.Quantity,
+			Price:    it.Price,
+		})
 	}
+
 	return out
 }
 
 func toDomainAddress(a transport.DeliveryAddress) entity.DeliveryAddress {
-	return entity.DeliveryAddress{Street: a.Street, House: a.House, Apartment: a.Apartment, Floor: a.Floor, Comment: a.Comment}
+	return entity.DeliveryAddress{
+		Street:    a.Street,
+		House:     a.House,
+		Apartment: a.Apartment,
+		Floor:     a.Floor,
+		Comment:   a.Comment,
+	}
 }
 
 func toTransportItems(items []entity.Item) []transport.Item {
 	out := make([]transport.Item, 0, len(items))
 	for _, it := range items {
-		out = append(out, transport.Item{FoodID: it.FoodID, Name: it.Name, Quantity: it.Quantity, Price: it.Price})
+		out = append(out, transport.Item{
+			FoodID:   it.FoodID,
+			Name:     it.Name,
+			Quantity: it.Quantity,
+			Price:    it.Price,
+		})
 	}
+
 	return out
 }
 
 func toTransportAddress(a entity.DeliveryAddress) transport.DeliveryAddress {
-	return transport.DeliveryAddress{Street: a.Street, House: a.House, Apartment: a.Apartment, Floor: a.Floor, Comment: a.Comment}
+	return transport.DeliveryAddress{
+		Street:    a.Street,
+		House:     a.House,
+		Apartment: a.Apartment,
+		Floor:     a.Floor,
+		Comment:   a.Comment,
+	}
 }

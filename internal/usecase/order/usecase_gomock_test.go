@@ -13,13 +13,16 @@ import (
 )
 
 type fixedClock struct{ t time.Time }
+
 func (f fixedClock) Now() time.Time { return f.t }
 
 type nopLog struct{}
+
 func (nopLog) WithFields(ctx context.Context, fields map[string]any) context.Context { return ctx }
-func (nopLog) Info(ctx context.Context, args ...any) {}
+func (nopLog) Info(ctx context.Context, args ...any)                                 {}
 
 type nopMetric struct{}
+
 func (nopMetric) Increment(key string) {}
 
 func TestService_Create_ProducesAndPersists(t *testing.T) {
@@ -35,9 +38,18 @@ func TestService_Create_ProducesAndPersists(t *testing.T) {
 
 	in := uc.CreateInput{
 		RestaurantID: "rest-1",
-		Items:       []entity.Item{{FoodID: "f1", Name: "Pizza", Quantity: 1, Price: 500}},
-		TotalPrice:  500,
-		Address:     entity.DeliveryAddress{Street: "Main"},
+		Items: []entity.Item{
+			{
+				FoodID:   "f1",
+				Name:     "Pizza",
+				Quantity: 1,
+				Price:    500,
+			},
+		},
+		TotalPrice: 500,
+		Address: entity.DeliveryAddress{
+			Street: "Main",
+		},
 	}
 
 	// Expect repository create and producer event; accept any order pointer
@@ -62,7 +74,11 @@ func TestService_Delete_ProducerCalled(t *testing.T) {
 
 	clk := fixedClock{t: time.Now().UTC()}
 	svc := uc.NewWithDeps(repo, prod, clk, nopLog{}, nopMetric{})
-	order := &entity.Order{ID: "id-1", UserID: "u1", Status: entity.OrderStatusCreated}
+	order := &entity.Order{
+		ID:     "id-1",
+		UserID: "u1",
+		Status: entity.OrderStatusCreated,
+	}
 
 	repo.EXPECT().GetByID(gomock.Any(), "id-1").Return(order, nil)
 	repo.EXPECT().MarkDeleted(gomock.Any(), "id-1", "u1").Return(nil)

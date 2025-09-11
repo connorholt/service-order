@@ -18,31 +18,38 @@ import (
 	uc "github.com/nikolaev/service-order/internal/usecase/order"
 )
 
-	type fakeService struct {
-		CreateFn    func(ctx context.Context, userID string, in uc.CreateInput) (*entity.Order, error)
-		GetFn       func(ctx context.Context, userID, id string) (*entity.Order, error)
-		GetStatusFn func(ctx context.Context, userID, id string) (entity.OrderStatus, error)
-		ListFromFn  func(ctx context.Context, from time.Time) ([]*entity.Order, error)
-		UpdateFn    func(ctx context.Context, userID, id string, in uc.UpdateInput) (*entity.Order, error)
-		DeleteFn    func(ctx context.Context, userID, id string) error
-	}
+type fakeService struct {
+	CreateFn    func(ctx context.Context, userID string, in uc.CreateInput) (*entity.Order, error)
+	GetFn       func(ctx context.Context, userID, id string) (*entity.Order, error)
+	GetStatusFn func(ctx context.Context, userID, id string) (entity.OrderStatus, error)
+	ListFromFn  func(ctx context.Context, from time.Time) ([]*entity.Order, error)
+	UpdateFn    func(ctx context.Context, userID, id string, in uc.UpdateInput) (*entity.Order, error)
+	DeleteFn    func(ctx context.Context, userID, id string) error
+}
 
-	func (f fakeService) Create(ctx context.Context, userID string, in uc.CreateInput) (*entity.Order, error) {
-		return f.CreateFn(ctx, userID, in)
-	}
-	func (f fakeService) Get(ctx context.Context, userID, id string) (*entity.Order, error) {
-		return f.GetFn(ctx, userID, id)
-	}
-	func (f fakeService) GetStatus(ctx context.Context, userID, id string) (entity.OrderStatus, error) {
-		return f.GetStatusFn(ctx, userID, id)
-	}
-	func (f fakeService) ListFrom(ctx context.Context, from time.Time) ([]*entity.Order, error) {
-		return f.ListFromFn(ctx, from)
-	}
-	func (f fakeService) Update(ctx context.Context, userID, id string, in uc.UpdateInput) (*entity.Order, error) {
-		return f.UpdateFn(ctx, userID, id, in)
-	}
-	func (f fakeService) Delete(ctx context.Context, userID, id string) error { return f.DeleteFn(ctx, userID, id) }
+func (f fakeService) Create(ctx context.Context, userID string, in uc.CreateInput) (*entity.Order, error) {
+	return f.CreateFn(ctx, userID, in)
+}
+
+func (f fakeService) Get(ctx context.Context, userID, id string) (*entity.Order, error) {
+	return f.GetFn(ctx, userID, id)
+}
+
+func (f fakeService) GetStatus(ctx context.Context, userID, id string) (entity.OrderStatus, error) {
+	return f.GetStatusFn(ctx, userID, id)
+}
+
+func (f fakeService) ListFrom(ctx context.Context, from time.Time) ([]*entity.Order, error) {
+	return f.ListFromFn(ctx, from)
+}
+
+func (f fakeService) Update(ctx context.Context, userID, id string, in uc.UpdateInput) (*entity.Order, error) {
+	return f.UpdateFn(ctx, userID, id, in)
+}
+
+func (f fakeService) Delete(ctx context.Context, userID, id string) error {
+	return f.DeleteFn(ctx, userID, id)
+}
 
 func setupRouter(h *handlers.OrderHandler) *chi.Mux {
 	r := chi.NewRouter()
@@ -52,7 +59,7 @@ func setupRouter(h *handlers.OrderHandler) *chi.Mux {
 
 func TestOrderHandler_Create_Success(t *testing.T) {
 	fake := fakeService{
-  CreateFn: func(ctx context.Context, userID string, in uc.CreateInput) (*entity.Order, error) {
+		CreateFn: func(ctx context.Context, userID string, in uc.CreateInput) (*entity.Order, error) {
 			return &entity.Order{
 				ID:           "o1",
 				UserID:       userID,
@@ -71,9 +78,18 @@ func TestOrderHandler_Create_Success(t *testing.T) {
 
 	body := transport.CreateOrderRequest{
 		RestaurantID: "rest-1",
-		Items:        []transport.Item{{FoodID: "f1", Name: "Pizza", Quantity: 1, Price: 500}},
-		TotalPrice:   500,
-		Address:      transport.DeliveryAddress{Street: "Main"},
+		Items: []transport.Item{
+			{
+				FoodID:   "f1",
+				Name:     "Pizza",
+				Quantity: 1,
+				Price:    500,
+			},
+		},
+		TotalPrice: 500,
+		Address: transport.DeliveryAddress{
+			Street: "Main",
+		},
 	}
 	b, _ := json.Marshal(body)
 	req := httptest.NewRequest(http.MethodPost, "/public/api/v1/order", bytes.NewReader(b))
@@ -103,7 +119,7 @@ func TestOrderHandler_Create_BadJSON(t *testing.T) {
 
 func TestOrderHandler_GetStatus_OK(t *testing.T) {
 	fake := fakeService{
-  GetStatusFn: func(ctx context.Context, userID, id string) (entity.OrderStatus, error) {
+		GetStatusFn: func(ctx context.Context, userID, id string) (entity.OrderStatus, error) {
 			return entity.OrderStatusPending, nil
 		},
 	}
@@ -125,7 +141,22 @@ func TestOrderHandler_List_OK(t *testing.T) {
 	fake := fakeService{
 		ListFromFn: func(ctx context.Context, from time.Time) ([]*entity.Order, error) {
 			return []*entity.Order{
-				{ID: "o1", UserID: "", RestaurantID: "r1", Items: []entity.Item{{FoodID: "f1", Name: "P"}}, TotalPrice: 100, Address: entity.DeliveryAddress{}, Status: entity.OrderStatusCreated, CreatedAt: time.Now().UTC(), UpdatedAt: time.Now().UTC()},
+				{
+					ID:           "o1",
+					UserID:       "",
+					RestaurantID: "r1",
+					Items: []entity.Item{
+						{
+							FoodID: "f1",
+							Name:   "P",
+						},
+					},
+					TotalPrice: 100,
+					Address:    entity.DeliveryAddress{},
+					Status:     entity.OrderStatusCreated,
+					CreatedAt:  time.Now().UTC(),
+					UpdatedAt:  time.Now().UTC(),
+				},
 			}, nil
 		},
 	}

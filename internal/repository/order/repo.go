@@ -14,7 +14,7 @@ type InMemory struct {
 	store map[string]*entity.Order
 }
 
-func (r *InMemory) ListFrom(ctx context.Context, from time.Time) ([]*entity.Order, error) {
+func (r *InMemory) ListFrom(_ context.Context, from time.Time) ([]*entity.Order, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 	out := make([]*entity.Order, 0)
@@ -35,7 +35,7 @@ func NewInMemory() *InMemory {
 	return &InMemory{store: make(map[string]*entity.Order)}
 }
 
-func (r *InMemory) Create(ctx context.Context, o *entity.Order) error {
+func (r *InMemory) Create(_ context.Context, o *entity.Order) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	if _, ok := r.store[o.ID]; ok {
@@ -46,7 +46,7 @@ func (r *InMemory) Create(ctx context.Context, o *entity.Order) error {
 	return nil
 }
 
-func (r *InMemory) GetByID(ctx context.Context, id string) (*entity.Order, error) {
+func (r *InMemory) GetByID(_ context.Context, id string) (*entity.Order, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 	if o, ok := r.store[id]; ok {
@@ -56,7 +56,7 @@ func (r *InMemory) GetByID(ctx context.Context, id string) (*entity.Order, error
 	return nil, entity.ErrNotFound
 }
 
-func (r *InMemory) Update(ctx context.Context, o *entity.Order) error {
+func (r *InMemory) Update(_ context.Context, o *entity.Order) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	if _, ok := r.store[o.ID]; !ok {
@@ -67,7 +67,7 @@ func (r *InMemory) Update(ctx context.Context, o *entity.Order) error {
 	return nil
 }
 
-func (r *InMemory) MarkDeleted(ctx context.Context, id string, userID string) error {
+func (r *InMemory) MarkDeleted(_ context.Context, id string, userID string) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	o, ok := r.store[id]

@@ -35,5 +35,6 @@ func (s *service) Create(ctx context.Context, userID string, in CreateInput) (*e
 		return nil, err
 	}
 	_ = s.producer.OrderCreated(ctx, o)
+
 	return o, nil
 }

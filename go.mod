@@ -1,6 +1,6 @@
 module github.com/nikolaev/service-order
 
-go 1.25
+go 1.24
 
 require (
 	github.com/IBM/sarama v1.45.1

@@ -8,10 +8,10 @@ import (
 	"testing"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/nikolaev/service-order/internal/domain/entity"
 	"github.com/nikolaev/service-order/internal/gateway/kafka"
 	"github.com/nikolaev/service-order/internal/handlers"
 	"github.com/nikolaev/service-order/internal/handlers/types/transport"
-	"github.com/nikolaev/service-order/internal/domain/entity"
 	repo "github.com/nikolaev/service-order/internal/repository/order"
 	uc "github.com/nikolaev/service-order/internal/usecase/order"
 )
@@ -26,9 +26,18 @@ func TestUsecase_Create_Get_Update_Delete(t *testing.T) {
 		OrderNumber:  "N-1",
 		FIO:          "Ivanov I.I.",
 		RestaurantID: "rest1",
-		Items:        []entity.Item{{FoodID: "f1", Name: "Pizza", Quantity: 1, Price: 500}},
-		TotalPrice:   500,
-		Address:      entity.DeliveryAddress{Street: "Main"},
+		Items: []entity.Item{
+			{
+				FoodID:   "f1",
+				Name:     "Pizza",
+				Quantity: 1,
+				Price:    500,
+			},
+		},
+		TotalPrice: 500,
+		Address: entity.DeliveryAddress{
+			Street: "Main",
+		},
 	})
 	if err != nil {
 		t.Fatalf("create error: %v", err)

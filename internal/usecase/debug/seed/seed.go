@@ -41,8 +41,18 @@ func (s *service) Seed(ctx context.Context, userID string, n int) ([]*entity.Ord
 		estimated := createdAt.Add(minutes(30 + i))
 
 		items := []entity.Item{
-			{FoodID: "f-" + itoa(i, 1), Name: pick([]string{"Burger", "Pizza", "Sushi", "Pasta"}, i), Quantity: 1 + (i % 3), Price: 300 + 50*(i%5)},
-			{FoodID: "d-" + itoa(i, 2), Name: pick([]string{"Cola", "Tea", "Juice"}, i+1), Quantity: 1, Price: 120 + 10*(i%4)},
+			{
+				FoodID:   "f-" + itoa(i, 1),
+				Name:     pick([]string{"Burger", "Pizza", "Sushi", "Pasta"}, i),
+				Quantity: 1 + (i % 3),
+				Price:    300 + 50*(i%5),
+			},
+			{
+				FoodID:   "d-" + itoa(i, 2),
+				Name:     pick([]string{"Cola", "Tea", "Juice"}, i+1),
+				Quantity: 1,
+				Price:    120 + 10*(i%4),
+			},
 		}
 		total := int64(0)
 		for _, it := range items {
@@ -108,8 +118,8 @@ func (s *service) Seed(ctx context.Context, userID string, n int) ([]*entity.Ord
 }
 
 // Helpers without importing fmt to minimize deps
-func itoa(v int, salt int) string         { return fmtInt(v + salt) }
-func sprintf(format string, v int) string { return fmtPadded(v) }
+func itoa(v int, salt int) string    { return fmtInt(v + salt) }
+func sprintf(_ string, v int) string { return fmtPadded(v) }
 
 func pick[T any](arr []T, i int) T { return arr[i%len(arr)] }
 
